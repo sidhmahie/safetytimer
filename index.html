@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html><head><meta name="GCD" content="YTk3ODQ3ZWZhN2I4NzZmMzBkNTEwYjJl92745c9f4a5e5a31371a2f4029689754"/>
+<html><head><meta name="GCD" content="YTk3ODQ3ZWZhN2I4NzZmMzBkNTEwYjJl2ac61835dc1bba31dc8890c16a5feda8"/>
   <meta charset="utf-8">
   <title>Keep Away !</title>
   <meta name="generator" content="Google Web Designer 14.0.4.1108">
@@ -81,55 +81,45 @@ body {
     height: 20px;
     position: absolute;
     left: 384px;
-    top: 376px;
     width: 140px;
     color: rgb(118, 14, 162);
+    top: 345px;
 }
 .gwd-select-14mv {
     display: block;
     position: absolute;
     height: 20px;
     width: 50px;
-    top: 376px;
-    left: 601px;
     background-image: none;
     background-color: rgb(218, 153, 210);
+    left: 608px;
+    top: 345px;
 }
 .gwd-button-1al5 {
     display: block;
-    height: 24px;
     position: absolute;
-    width: 100px;
-    left: 476px;
-    top: 412px;
     padding: 1px 6px;
     color: rgb(118, 14, 162);
     font-weight: bold;
-}
-.gwd-label-hfaz {
-    display: block;
-    position: absolute;
-    font-size: 30px;
-    font-weight: bold;
-    height: 40px;
-    top: 461px;
-    color: rgb(115, 15, 158);
-    width: 200px;
-    left: 422px;
-    text-align: center;
+    left: 384px;
+    font-size: 20px;
+    height: 50px;
+    top: 376px;
+    width: 70px;
+    text-align: left;
 }
 .gwd-select-qh8n {
     height: 20px;
     width: 150px;
-    top: 332px;
     left: 508px;
     background-image: none;
     background-color: rgb(202, 152, 196);
+    top: 312px;
 }
 .gwd-label-10kj {
     left: 384px;
-    top: 334px;
     color: rgb(118, 14, 162);
+    top: 312px;
 }
 .gwd-label-1d6f {
     position: absolute;
@@ -140,124 +130,164 @@ body {
     height: 30px;
     font-size: 20px;
     left: 403px;
+}
+.gwd-button-enql {
+    position: absolute;
+    font-size: 20px;
+    height: 50px;
+    width: 70px;
+    left: 584px;
+    top: 376px;
+    color: rgb(118, 14, 162);
+    font-weight: bold;
+    text-align: right;
+}
+.gwd-label-1kpf {
+    position: absolute;
+    height: 50px;
+    font-size: 40px;
+    left: 384px;
+    width: 270px;
+    top: 444px;
+    text-align: center;
+}
+.gwd-label-19uc {
+    position: absolute;
+    height: 50px;
+    left: 470px;
+    top: 378px;
+    width: 100px;
+    font-size: 20px;
+    text-align: center;
 }</style>
   <script type="text/javascript">
-    var timerInterval;
+    var timer;
+    const TIMER_INTERVAL_SEC = 2;
+    const IGNORE_SEC_AFTER_MIN = 5;
     var safeTimeSec = 3600;
     var remainingTimeSec = 3600;
-    var isTimerMode = false;
-    var i = 0;
 
-    function keepAway() {
+    /*
+    Called by [Get Time] button. Calculates and displeys safe time for the given disease, distance and the type of exposure. 
+    */
+    function getSafeTime() {
+      //REFERENCE DATA
+      const ID50_MAP = new Map();
+      ID50_MAP.set("AL", 40);
+      ID50_MAP.set("IN", 120);
+      ID50_MAP.set("OM", 20);
 
-      if (isTimerMode == false) {
-        //REFERENCE DATA
-        const ID50_MAP = new Map();
-        ID50_MAP.set("AL", 40);
-        ID50_MAP.set("IN", 120);
-        ID50_MAP.set("OM", 20);
+      //EXPERIMANTAL DATA
+      const PPM_MAP = new Map();
+      //COVID-19 Alpfa, Nose exposure
+      PPM_MAP.set("ALNO01", 51.89);
+      PPM_MAP.set("ALNO02", 28.58);
+      PPM_MAP.set("ALNO03", 12.01);
+      PPM_MAP.set("ALNO04", 1.85);
+      PPM_MAP.set("ALNO05", 0.34);
+      PPM_MAP.set("ALNO06", 0.15);
+      PPM_MAP.set("ALNO07", 0.02);
+      PPM_MAP.set("ALNO08", 0.00);
+      //COVID-19 Alpfa, Nose and mouth exposure
+      PPM_MAP.set("ALNM01", 259.45);
+      PPM_MAP.set("ALNM02", 142.88);
+      PPM_MAP.set("ALNM03", 60.04);
+      PPM_MAP.set("ALNM04", 9.23);
+      PPM_MAP.set("ALNM05", 1.69);
+      PPM_MAP.set("ALNM06", 0.76);
+      PPM_MAP.set("ALNM07", 0.11);
+      PPM_MAP.set("ALNM08", 0.02);
+      //Influenza, Nose exposure
+      PPM_MAP.set("INNO01", 7.78);
+      PPM_MAP.set("INNO02", 4.28);
+      PPM_MAP.set("INNO03", 1.80);
+      PPM_MAP.set("INNO04", 0.28);
+      PPM_MAP.set("INNO05", 0.05);
+      PPM_MAP.set("INNO06", 0.02);
+      PPM_MAP.set("INNO07", 0.00);
+      PPM_MAP.set("INNO08", 0.00);
+      //Influenza, Nose and mouth exposure
+      PPM_MAP.set("INNM01", 38.92);
+      PPM_MAP.set("INNM02", 21.43);
+      PPM_MAP.set("INNM03", 9.00);
+      PPM_MAP.set("INNM04", 1.38);
+      PPM_MAP.set("INNM05", 0.25);
+      PPM_MAP.set("INNM06", 0.11);
+      PPM_MAP.set("INNM07", 0.02);
+      PPM_MAP.set("INNM08", 0.00);
 
-        //EXPERIMANTAL DATA
-        const PPM_MAP = new Map();
-        //COVID-19 Alpfa, Nose exposure
-        PPM_MAP.set("ALNO01", 51.89);
-        PPM_MAP.set("ALNO02", 28.58);
-        PPM_MAP.set("ALNO03", 12.01);
-        PPM_MAP.set("ALNO04", 1.85);
-        PPM_MAP.set("ALNO05", 0.34);
-        PPM_MAP.set("ALNO06", 0.15);
-        PPM_MAP.set("ALNO07", 0.02);
-        PPM_MAP.set("ALNO08", 0.00);
-        //COVID-19 Alpfa, Nose and mouth exposure
-        PPM_MAP.set("ALNM01", 259.45);
-        PPM_MAP.set("ALNM02", 142.88);
-        PPM_MAP.set("ALNM03", 60.04);
-        PPM_MAP.set("ALNM04", 9.23);
-        PPM_MAP.set("ALNM05", 1.69);
-        PPM_MAP.set("ALNM06", 0.76);
-        PPM_MAP.set("ALNM07", 0.11);
-        PPM_MAP.set("ALNM08", 0.02);
-        //Influenza, Nose exposure
-        PPM_MAP.set("INNO01", 7.78);
-        PPM_MAP.set("INNO02", 4.28);
-        PPM_MAP.set("INNO03", 1.80);
-        PPM_MAP.set("INNO04", 0.28);
-        PPM_MAP.set("INNO05", 0.05);
-        PPM_MAP.set("INNO06", 0.02);
-        PPM_MAP.set("INNO07", 0.00);
-        PPM_MAP.set("INNO08", 0.00);
-        //Influenza, Nose and mouth exposure
-        PPM_MAP.set("INNM01", 38.92);
-        PPM_MAP.set("INNM02", 21.43);
-        PPM_MAP.set("INNM03", 9.00);
-        PPM_MAP.set("INNM04", 1.38);
-        PPM_MAP.set("INNM05", 0.25);
-        PPM_MAP.set("INNM06", 0.11);
-        PPM_MAP.set("INNM07", 0.02);
-        PPM_MAP.set("INNM08", 0.00);
+      //USER INPUTS
+      var exposure = document.getElementById('select_exposure').selectedOptions[0].value;
+      var disease = document.getElementById('select_disease').selectedOptions[0].value;
+      var distance = document.getElementById('select_distance').selectedOptions[0].value;
 
-        //USER INPUTS
-        var exposure = document.getElementById('select_exposure').selectedOptions[0].value;
-        var disease = document.getElementById('select_disease').selectedOptions[0].value;
-        var distance = document.getElementById('select_distance').selectedOptions[0].value;
+      //TIME CALCULATION
+      var id50 = ID50_MAP.get(disease);
 
-        //TIME CALCULATION
-        var id50 = ID50_MAP.get(disease);
-
-        // Assuming all COVID variants have same density in a droplet
-        if (disease == "OM") {
-          disease = "AL";
-        }
-
-        var situation = disease + exposure + distance;
-        var ppm = PPM_MAP.get(situation);
-        //Avoid deviding by zero
-        if (ppm == 0.00) {
-          ppm = 0.01;
-        }
-        var safeTimeMin = (id50 / ppm);
-        safeTimeSec = Math.round(safeTimeMin * 60);
-        remainingTimeSec = safeTimeSec;
-
-
-        //DISPLAY CALCULATION
-        displayTime(safeTimeSec);
-
-        //Toggle mode
-        clearInterval(timerInterval);
-        isTimerMode = true;
-        document.getElementById('button_getTime').innerHTML = "Start Timer";
-
-      } else {
-        //START TIMER
-        setSafeTimer();
-        //Toggle mode
-        isTimerMode = false;
-        document.getElementById('button_getTime').innerHTML = "Get Time";
+      // Assuming all COVID variants have same density in a droplet
+      if (disease == "OM") {
+        disease = "AL";
       }
 
+      var situation = disease + exposure + distance;
+      var ppm = PPM_MAP.get(situation);
+      //Avoid deviding by zero
+      if (ppm == 0.00) {
+        ppm = 0.01;
+      }
+      var safeTimeMin = (id50 / ppm);
+      safeTimeSec = Math.round(safeTimeMin * 60);
+
+      //DISPLAY SAFE TIME
+      document.getElementById('safe_time_display').innerHTML = getDisplayTime(safeTimeSec);
+
     };
 
-
-    function setSafeTimer() {
-      timerInterval = setInterval(checkRemainingTime, 5000);
+    /*
+    Called by [Start Timer] button. Updates remaining time every TIMER_INTERVAL_SEC.
+    */
+    function startSafeTimer() {
+      remainingTimeSec = safeTimeSec;
+      var outputLabel = document.getElementById('remaining_time_display');
+      outputLabel.innerHTML = getDisplayTime(remainingTimeSec);
+      outputLabel.style.color = "black"
+      timer = setInterval(checkRemainingTime, TIMER_INTERVAL_SEC * 1000);
 
     };
 
+    /*
+    Tracks if the timer is expired. Applies color coding based on the remaining time.
+    */
     function checkRemainingTime() {
-      remainingTimeSec = remainingTimeSec - 5;
+      remainingTimeSec = remainingTimeSec - TIMER_INTERVAL_SEC;
+      var outputLabel = document.getElementById('remaining_time_display');
       if (remainingTimeSec < 0) {
+        //TIMER EXPIRED
         remainingTimeSec = 0;
-        clearInterval(timerInterval);
+        clearInterval(timer);
+        outputLabel.innerHTML = "";
+        outputLabel.style.backgroundColor = "white"
       } else {
-        displayTime(remainingTimeSec);
+        
+        outputLabel.innerHTML = getDisplayTime(remainingTimeSec);
+
+        //COLOR CODING
+        outputLabel.style.color = "white";
+        if (remainingTimeSec < 30) {
+          outputLabel.style.backgroundColor = "red";
+        } else if (remainingTimeSec < 60) {
+          outputLabel.style.backgroundColor = "orange";
+        } else if (remainingTimeSec < 120) {
+          outputLabel.style.backgroundColor = "yellow";
+          outputLabel.style.color = "blue";
+        } else {
+          outputLabel.style.backgroundColor = "green";
+        }
       }
-      //document.getElementById('label_safeTime').innerHTML = remainingTimeSec;
     };
 
 
-    function displayTime(givenTimeSec) {
-      //DISPLAY TEXT
+    function getDisplayTime(givenTimeSec) {
       var min = Math.floor(givenTimeSec / 60);
       var sec = givenTimeSec % 60;
       var minDisplay = "";
@@ -265,33 +295,17 @@ body {
       if (min > 0) {
         var minDisplay = min + " min ";
       }
-      if (min < 5) {
+      if (min < IGNORE_SEC_AFTER_MIN) {
         var secDisplay = sec + " sec ";
       }
-      var safeTimeDisplay = minDisplay + secDisplay;
-
-      //DISPLAY COLOR
-      var outputLabel = document.getElementById('label_safeTime');
-      outputLabel.innerHTML = safeTimeDisplay;
-      outputLabel.style.color = "white";
-
-      if (givenTimeSec < 30) {
-        outputLabel.style.backgroundColor = "red";
-      } else if (givenTimeSec < 60) {
-        outputLabel.style.backgroundColor = "orange";
-      } else if (givenTimeSec < 120) {
-        outputLabel.style.backgroundColor = "yellow";
-        outputLabel.style.color = "blue";
-      } else {
-        outputLabel.style.backgroundColor = "green";
-      }
-
-    };
+      return safeTimeDisplay = minDisplay + secDisplay;
+    }
   </script>
 </head>
 
 <body class="htmlNoPages">
   <img src="apple-watch.png" id="apple-watch" class="gwd-img-1gsg">
+  <label id="label_title" class="gwd-label-1d6f">MAHIE'S SAFETY TIMER</label>
   <label id="label_exposure" class="gwd-label-8tm9"> Exposure Type </label>
   <select id="select_exposure" class="gwd-select-um37">
     <option value="NO" selected="">Nose</option>
@@ -314,9 +328,10 @@ body {
     <option value="07">7</option>
     <option value="08">8</option>
   </select>
-  <button id="button_getTime" class="gwd-button-1al5" onclick="keepAway()">Get Time</button>
-  <label id="label_safeTime" class="gwd-label-hfaz">__ min </label>
-  <label id="label_title" class="gwd-label-1d6f">MAHIE'S SAFETY TIMER</label>
+  <button id="button_getTime" class="gwd-button-1al5" onclick="getSafeTime()">Get Time</button>
+  <label id="safe_time_display" class="gwd-label-19uc"></label>
+  <button id="button_startTimer" class="gwd-button-enql" onclick="startSafeTimer()">Start Timer</button>
+  <label id="remaining_time_display" class="gwd-label-1kpf"></label>
 
 
 </body></html>
