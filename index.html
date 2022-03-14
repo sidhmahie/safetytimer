@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html><head><meta name="GCD" content="YTk3ODQ3ZWZhN2I4NzZmMzBkNTEwYjJl2ac61835dc1bba31dc8890c16a5feda8"/>
+<html><head><meta name="GCD" content="YTk3ODQ3ZWZhN2I4NzZmMzBkNTEwYjJl28af443c54b345d2e82b615da7f23f42"/>
   <meta charset="utf-8">
   <title>Keep Away !</title>
   <meta name="generator" content="Google Web Designer 14.0.4.1108">
@@ -247,10 +247,14 @@ body {
     Called by [Start Timer] button. Updates remaining time every TIMER_INTERVAL_SEC.
     */
     function startSafeTimer() {
+      if (timer != null){
+         clearInterval(timer);
+      }
       remainingTimeSec = safeTimeSec;
       var outputLabel = document.getElementById('remaining_time_display');
       outputLabel.innerHTML = getDisplayTime(remainingTimeSec);
       outputLabel.style.color = "black"
+      outputLabel.style.backgroundColor = "white"
       timer = setInterval(checkRemainingTime, TIMER_INTERVAL_SEC * 1000);
 
     };
